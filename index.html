@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post-its Pirkito</title>
+    <style>
+        :root {
+            --azul-medio: #4A90E2;
+            --vermelho-medio: #E74C3C;
+            --verde-medio: #2ECC71;
+            --cinza-claro: #f5f5f5;
+            --cinza-escuro: #333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--cinza-claro);
+            color: var(--cinza-escuro);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        h1 {
+            color: var(--azul-medio);
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .pastas-container {
+            display: flex;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+        
+        .pasta {
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-right: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+        
+        .pasta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .pasta.ativa {
+            background-color: var(--azul-medio);
+            color: white;
+        }
+        
+        .nova-pasta-btn {
+            background-color: var(--verde-medio);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .btn-excluir-pasta {
+            background-color: transparent;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .postits-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .postit {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 200px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        
+        .postit:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        .postit.azul {
+            background-color: var(--azul-medio);
+            color: white;
+        }
+        
+        .postit.vermelho {
+            background-color: var(--vermelho-medio);
+            color: white;
+        }
+        
+        .postit.verde {
+            background-color: var(--verde-medio);
+            color: white;
+        }
+        
+        .postit-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .postit-conteudo {
+            flex-grow: 1;
+            margin-bottom: 10px;
+            overflow: auto;
+        }
+        
+        .postit-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .acoes-postit {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 0.8rem;
+        }
+        
+        .btn-mover-pasta {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-compartilhar {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .btn-mudar-cor {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn-salvar {
+            background-color: var(--verde-medio);
+            color: white;
+        }
+        
+        .btn-cancelar {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .opcoes-compartilhamento {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .opcao-compartilhamento {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .acoes-principais {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        .btn-principal {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-novo-postit {
+            background-color: var(--azul-medio);
+            color: white;
+        }
+        
+        .modal-mudar-cor {
+            text-align: center;
+        }
+        
+        .cores-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .cor-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .cor-option.azul {
+            background-color: var(--azul-medio);
+        }
+        
+        .cor-option.vermelho {
+            background-color: var(--vermelho-medio);
+        }
+        
+        .cor-option.verde {
+            background-color: var(--verde-medio);
+        }
+        
+        .cor-option.selecionada {
+            border-color: #333;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Post-its Pirkito</h1>
+            <div class="subtitle">make by rede cidadã</div>
+            <div class="acoes-principais">
+                <button class="btn-principal btn-novo-postit" id="btnNovoPostit">Novo Post-it</button>
+            </div>
+        </header>
+        
+        <div class="pastas-container">
+            <button class="nova-pasta-btn" id="btnNovaPasta">+ Nova Pasta</button>
+            <!-- Pastas serão adicionadas dinamicamente aqui -->
+        </div>
+        
+        <div class="postits-container" id="postitsContainer">
+            <!-- Post-its serão adicionados dinamicamente aqui -->
+        </div>
+    </div>
+    
+    <!-- Modal para criar pasta -->
+    <div class="modal" id="modalPasta">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Pasta</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="formPasta">
+                <div class="form-group">
+                    <label for="pastaNome">Nome da pasta:</label>
+                    <input type="text" id="pastaNome" required>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn btn-cancelar" id="btnCancelarPasta">Cancelar</button>
+                <button class="btn btn-salvar" id="btnSalvarPasta">Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para mudar cor do post-it -->
+    <div class="modal" id="modalMudarCor">
+        <div class="modal-content modal-mudar-cor">
+            <div class="modal-header">
+                <h2>Mudar Cor do Post-it</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>Escolha uma nova cor para o post-it:</p>
+            <div class="cores-container">
+                <div class="cor-option azul" data-cor="azul"></div>
+                <div class="cor-option vermelho" data-cor="vermelho"></div>
+                <div class="cor-option verde" data-cor="verde"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancelar" id="btnCancelarMudarCor">Cancelar</button>
+                <button class="btn btn-salvar" id="btnSalvarMudarCor">Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para mover post-it para outra pasta -->
+    <div class="modal" id="modalMoverPasta">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Mover Post-it para outra Pasta</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="pastaDestino">Selecione a pasta de destino:</label>
+                <select id="pastaDestino">
+                    <!-- Opções de pasta serão preenchidas dinamicamente -->
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancelar" id="btnCancelarMoverPasta">Cancelar</button>
+                <button class="btn btn-salvar" id="btnSalvarMoverPasta">Mover</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para compartilhar post-it -->
+    <div class="modal" id="modalCompartilhar">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Compartilhar Post-it</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>Escolha uma opção de compartilhamento:</p>
+            <div class="opcoes-compartilhamento">
+                <div class="opcao-compartilhamento">
+                    <span>Link atual do post-it</span>
+                    <button class="btn btn-compartilhar" id="btnCompartilharLinkAtual">Compartilhar</button>
+                </div>
+                <div class="opcao-compartilhamento">
+                    <span>Gerar novo link</span>
+                    <button class="btn btn-compartilhar" id="btnGerarNovoLink">Gerar</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancelar" id="btnFecharCompartilhar">Fechar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para confirmar exclusão de pasta -->
+    <div class="modal" id="modalExcluirPasta">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Excluir Pasta</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>Tem certeza que deseja excluir esta pasta? Esta ação irá apagar todos os post-its dentro dela.</p>
+            <div class="form-group">
+                <label for="senhaExclusao">Digite a senha para confirmar:</label>
+                <input type="password" id="senhaExclusao" placeholder="Senha de administração">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancelar" id="btnCancelarExclusaoPasta">Cancelar</button>
+                <button class="btn btn-excluir" id="btnConfirmarExclusaoPasta">Excluir</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Dados iniciais
+        let pastas = JSON.parse(localStorage.getItem('pastas')) || [
+            { id: 1, nome: 'Trabalho' },
+            { id: 2, nome: 'Pessoal' }
+        ];
+        
+        let postits = JSON.parse(localStorage.getItem('postits')) || [
+            { 
+                id: 1, 
+                titulo: 'Bem-vindo!', 
+                conteudo: 'Este é um exemplo de post-it. Clique para abrir a visualização completa.', 
+                cor: 'azul', 
+                pastaId: 1,
+                dataCriacao: new Date().toISOString()
+            },
+            { 
+                id: 2, 
+                titulo: 'Lembretes', 
+                conteudo: '- Reunião às 15h\n- Enviar relatório\n- Comprar café', 
+                cor: 'verde', 
+                pastaId: 1,
+                dataCriacao: new Date().toISOString()
+            }
+        ];
+        
+        let pastaAtiva = 1;
+        let postitParaMudarCor = null;
+        let postitParaMover = null;
+        let pastaParaExcluir = null;
+        
+        // Elementos DOM
+        const pastasContainer = document.querySelector('.pastas-container');
+        const postitsContainer = document.getElementById('postitsContainer');
+        const modalPasta = document.getElementById('modalPasta');
+        const modalMudarCor = document.getElementById('modalMudarCor');
+        const modalMoverPasta = document.getElementById('modalMoverPasta');
+        const modalCompartilhar = document.getElementById('modalCompartilhar');
+        const modalExcluirPasta = document.getElementById('modalExcluirPasta');
+        const formPasta = document.getElementById('formPasta');
+        const btnNovoPostit = document.getElementById('btnNovoPostit');
+        const btnNovaPasta = document.getElementById('btnNovaPasta');
+        const btnSalvarPasta = document.getElementById('btnSalvarPasta');
+        const btnCancelarPasta = document.getElementById('btnCancelarPasta');
+        const btnSalvarMudarCor = document.getElementById('btnSalvarMudarCor');
+        const btnCancelarMudarCor = document.getElementById('btnCancelarMudarCor');
+        const btnSalvarMoverPasta = document.getElementById('btnSalvarMoverPasta');
+        const btnCancelarMoverPasta = document.getElementById('btnCancelarMoverPasta');
+        const btnFecharCompartilhar = document.getElementById('btnFecharCompartilhar');
+        const btnCompartilharLinkAtual = document.getElementById('btnCompartilharLinkAtual');
+        const btnGerarNovoLink = document.getElementById('btnGerarNovoLink');
+        const btnCancelarExclusaoPasta = document.getElementById('btnCancelarExclusaoPasta');
+        const btnConfirmarExclusaoPasta = document.getElementById('btnConfirmarExclusaoPasta');
+        const pastaDestinoSelect = document.getElementById('pastaDestino');
+        const senhaExclusaoInput = document.getElementById('senhaExclusao');
+        const corOptions = document.querySelectorAll('.cor-option');
+        
+        // Inicialização
+        function inicializar() {
+            renderizarPastas();
+            renderizarPostits();
+            configurarEventos();
+        }
+        
+        // Renderizar pastas
+        function renderizarPastas() {
+            pastasContainer.innerHTML = '<button class="nova-pasta-btn" id="btnNovaPasta">+ Nova Pasta</button>';
+            
+            pastas.forEach(pasta => {
+                const pastaElement = document.createElement('div');
+                pastaElement.className = `pasta ${pasta.id === pastaAtiva ? 'ativa' : ''}`;
+                pastaElement.innerHTML = `
+                    ${pasta.nome}
+                    <button class="btn-excluir-pasta" data-id="${pasta.id}">🗑️</button>
+                `;
+                pastaElement.dataset.id = pasta.id;
+                
+                pastaElement.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('btn-excluir-pasta')) {
+                        pastaAtiva = pasta.id;
+                        renderizarPastas();
+                        renderizarPostits();
+                    }
+                });
+                
+                pastasContainer.appendChild(pastaElement);
+            });
+            
+            // Reconfigurar eventos
+            document.getElementById('btnNovaPasta').addEventListener('click', abrirModalPasta);
+            document.querySelectorAll('.btn-excluir-pasta').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(e.target.dataset.id);
+                    abrirModalExcluirPasta(id);
+                });
+            });
+        }
+        
+        // Renderizar post-its
+        function renderizarPostits() {
+            postitsContainer.innerHTML = '';
+            
+            const postitsFiltrados = postits.filter(postit => postit.pastaId === pastaAtiva);
+            
+            if (postitsFiltrados.length === 0) {
+                postitsContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; padding: 20px;">Nenhum post-it nesta pasta. Clique em "Novo Post-it" para criar um.</p>';
+                return;
+            }
+            
+            postitsFiltrados.forEach(postit => {
+                const postitElement = document.createElement('div');
+                postitElement.className = `postit ${postit.cor}`;
+                postitElement.dataset.id = postit.id;
+                
+                postitElement.innerHTML = `
+                    <div class="postit-header">
+                        <h3>${postit.titulo}</h3>
+                        <div class="acoes-postit">
+                            <button class="btn btn-compartilhar" data-id="${postit.id}">Compartilhar</button>
+                        </div>
+                    </div>
+                    <div class="postit-conteudo">${postit.conteudo.replace(/\n/g, '<br>')}</div>
+                    <div class="postit-footer">
+                        <small>${formatarData(postit.dataCriacao)}</small>
+                        <div class="acoes-postit">
+                            <button class="btn btn-mover-pasta" data-id="${postit.id}">Mover</button>
+                            <button class="btn btn-mudar-cor" data-id="${postit.id}">Cor</button>
+                        </div>
+                    </div>
+                `;
+                
+                postitsContainer.appendChild(postitElement);
+            });
+            
+            // Configurar eventos dos botões
+            document.querySelectorAll('.btn-compartilhar').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(e.target.dataset.id);
+                    abrirModalCompartilhar(id);
+                });
+            });
+            
+            document.querySelectorAll('.btn-mudar-cor').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(e.target.dataset.id);
+                    abrirModalMudarCor(id);
+                });
+            });
+            
+            document.querySelectorAll('.btn-mover-pasta').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(e.target.dataset.id);
+                    abrirModalMoverPasta(id);
+                });
+            });
+            
+            // Configurar clique no post-it para abrir visualização completa
+            document.querySelectorAll('.postit').forEach(postit => {
+                postit.addEventListener('click', (e) => {
+                    // Só abre a visualização se não clicou em um botão
+                    if (!e.target.classList.contains('btn')) {
+                        const id = parseInt(e.currentTarget.dataset.id);
+                        abrirVisualizacaoCompleta(id);
+                    }
+                });
+            });
+        }
+        
+        // Configurar eventos
+        function configurarEventos() {
+            // Botões principais
+            btnNovoPostit.addEventListener('click', criarNovoPostit);
+            
+            // Eventos dos modais
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', fecharModais);
+            });
+            
+            btnSalvarPasta.addEventListener('click', salvarPasta);
+            btnCancelarPasta.addEventListener('click', fecharModais);
+            
+            btnSalvarMudarCor.addEventListener('click', salvarMudancaCor);
+            btnCancelarMudarCor.addEventListener('click', fecharModais);
+            
+            btnSalvarMoverPasta.addEventListener('click', salvarMoverPasta);
+            btnCancelarMoverPasta.addEventListener('click', fecharModais);
+            
+            btnFecharCompartilhar.addEventListener('click', fecharModais);
+            
+            btnCompartilharLinkAtual.addEventListener('click', compartilharLinkAtual);
+            btnGerarNovoLink.addEventListener('click', gerarNovoLink);
+            
+            btnCancelarExclusaoPasta.addEventListener('click', fecharModais);
+            btnConfirmarExclusaoPasta.addEventListener('click', confirmarExclusaoPasta);
+            
+            // Eventos de seleção de cor
+            corOptions.forEach(cor => {
+                cor.addEventListener('click', (e) => {
+                    corOptions.forEach(c => c.classList.remove('selecionada'));
+                    e.target.classList.add('selecionada');
+                    modalMudarCor.dataset.corSelecionada = e.target.dataset.cor;
+                });
+            });
+            
+            // Fechar modal ao clicar fora
+            window.addEventListener('click', (e) => {
+                if (e.target === modalPasta || e.target === modalMudarCor || 
+                    e.target === modalMoverPasta || e.target === modalCompartilhar || 
+                    e.target === modalExcluirPasta) {
+                    fecharModais();
+                }
+            });
+        }
+        
+        // Criar novo post-it automaticamente
+        function criarNovoPostit() {
+            const novoId = postits.length > 0 ? Math.max(...postits.map(p => p.id)) + 1 : 1;
+            const novoPostit = {
+                id: novoId,
+                titulo: `Post-it ${novoId}`,
+                conteudo: 'Clique para editar o conteúdo...',
+                cor: 'azul',
+                pastaId: pastaAtiva,
+                dataCriacao: new Date().toISOString()
+            };
+            
+            postits.push(novoPostit);
+            salvarDados();
+            renderizarPostits();
+        }
+        
+        // Abrir modal para nova pasta
+        function abrirModalPasta() {
+            document.getElementById('pastaNome').value = '';
+            modalPasta.style.display = 'flex';
+        }
+        
+        // Salvar pasta
+        function salvarPasta() {
+            const nome = document.getElementById('pastaNome').value.trim();
+            
+            if (!nome) {
+                alert('Por favor, insira um nome para a pasta.');
+                return;
+            }
+            
+            const novoId = pastas.length > 0 ? Math.max(...pastas.map(p => p.id)) + 1 : 1;
+            pastas.push({
+                id: novoId,
+                nome
+            });
+            
+            salvarDados();
+            renderizarPastas();
+            fecharModais();
+        }
+        
+        // Abrir modal para mudar cor
+        function abrirModalMudarCor(id) {
+            postitParaMudarCor = id;
+            const postit = postits.find(p => p.id === id);
+            
+            // Selecionar cor atual
+            corOptions.forEach(cor => {
+                cor.classList.remove('selecionada');
+                if (cor.dataset.cor === postit.cor) {
+                    cor.classList.add('selecionada');
+                }
+            });
+            
+            modalMudarCor.dataset.corSelecionada = postit.cor;
+            modalMudarCor.style.display = 'flex';
+        }
+        
+        // Salvar mudança de cor
+        function salvarMudancaCor() {
+            const novaCor = modalMudarCor.dataset.corSelecionada;
+            const postit = postits.find(p => p.id === postitParaMudarCor);
+            
+            if (postit) {
+                postit.cor = novaCor;
+                salvarDados();
+                renderizarPostits();
+            }
+            
+            fecharModais();
+        }
+        
+        // Abrir modal para mover post-it
+        function abrirModalMoverPasta(id) {
+            postitParaMover = id;
+            
+            // Preencher select com pastas disponíveis
+            pastaDestinoSelect.innerHTML = '';
+            
+            pastas.forEach(pasta => {
+                const option = document.createElement('option');
+                option.value = pasta.id;
+                option.textContent = pasta.nome;
+                if (pasta.id === pastaAtiva) {
+                    option.selected = true;
+                }
+                pastaDestinoSelect.appendChild(option);
+            });
+            
+            modalMoverPasta.style.display = 'flex';
+        }
+        
+        // Salvar movimento de pasta
+        function salvarMoverPasta() {
+            const novaPastaId = parseInt(pastaDestinoSelect.value);
+            const postit = postits.find(p => p.id === postitParaMover);
+            
+            if (postit) {
+                postit.pastaId = novaPastaId;
+                salvarDados();
+                renderizarPostits();
+                alert('Post-it movido com sucesso!');
+            }
+            
+            fecharModais();
+        }
+        
+        // Abrir modal para compartilhar post-it
+        function abrirModalCompartilhar(id) {
+            modalCompartilhar.dataset.postitId = id;
+            modalCompartilhar.style.display = 'flex';
+        }
+        
+        // Compartilhar link atual
+        function compartilharLinkAtual() {
+            const postitId = modalCompartilhar.dataset.postitId;
+            const url = `visualizacao-completa.html?id=${postitId}`;
+            
+            // Copiar para a área de transferência
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copiado para a área de transferência!');
+                fecharModais();
+            }).catch(err => {
+                console.error('Erro ao copiar link: ', err);
+                alert('Erro ao copiar link. Tente novamente.');
+            });
+        }
+        
+        // Gerar novo link
+        function gerarNovoLink() {
+            const postitId = modalCompartilhar.dataset.postitId;
+            const token = Date.now();
+            const url = `visualizacao-completa.html?id=${postitId}&token=${token}`;
+            
+            // Copiar para a área de transferência
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Novo link gerado e copiado para a área de transferência!');
+                fecharModais();
+            }).catch(err => {
+                console.error('Erro ao copiar link: ', err);
+                alert('Erro ao copiar link. Tente novamente.');
+            });
+        }
+        
+        // Abrir visualização completa
+        function abrirVisualizacaoCompleta(id) {
+            const url = `visualizacao-completa.html?id=${id}`;
+            window.open(url, '_blank');
+        }
+        
+        // Abrir modal para excluir pasta
+        function abrirModalExcluirPasta(id) {
+            pastaParaExcluir = id;
+            senhaExclusaoInput.value = '';
+            modalExcluirPasta.style.display = 'flex';
+        }
+        
+        // Confirmar exclusão de pasta
+        function confirmarExclusaoPasta() {
+            const senha = senhaExclusaoInput.value;
+            
+            if (senha !== "PIRKITO_FUNCION_ADM") {
+                alert('Senha incorreta! A exclusão da pasta foi cancelada.');
+                fecharModais();
+                return;
+            }
+            
+            // Excluir pasta e todos os post-its dentro dela
+            pastas = pastas.filter(p => p.id !== pastaParaExcluir);
+            postits = postits.filter(p => p.pastaId !== pastaParaExcluir);
+            
+            // Se a pasta ativa foi excluída, definir a primeira pasta como ativa
+            if (pastaAtiva === pastaParaExcluir && pastas.length > 0) {
+                pastaAtiva = pastas[0].id;
+            } else if (pastas.length === 0) {
+                pastaAtiva = null;
+            }
+            
+            salvarDados();
+            renderizarPastas();
+            renderizarPostits();
+            fecharModais();
+            
+            alert('Pasta e todos os post-its dentro dela foram excluídos com sucesso!');
+        }
+        
+        // Fechar todos os modais
+        function fecharModais() {
+            modalPasta.style.display = 'none';
+            modalMudarCor.style.display = 'none';
+            modalMoverPasta.style.display = 'none';
+            modalCompartilhar.style.display = 'none';
+            modalExcluirPasta.style.display = 'none';
+        }
+        
+        // Salvar dados no localStorage
+        function salvarDados() {
+            localStorage.setItem('pastas', JSON.stringify(pastas));
+            localStorage.setItem('postits', JSON.stringify(postits));
+        }
+        
+        // Formatar data
+        function formatarData(dataString) {
+            const data = new Date(dataString);
+            return data.toLocaleDateString('pt-BR');
+        }
+        
+        // Inicializar a aplicação
+        inicializar();
+    </script>
+</body>
+</html>

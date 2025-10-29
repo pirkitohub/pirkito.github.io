@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post-its Pirkito - Visualização Pública</title>
+    <style>
+        :root {
+            --azul-medio: #4A90E2;
+            --vermelho-medio: #E74C3C;
+            --verde-medio: #2ECC71;
+            --azul-claro: #A8D0FF;
+            --vermelho-claro: #FFA8A8;
+            --verde-claro: #A8FFC5;
+            --cinza-claro: #f5f5f5;
+            --cinza-escuro: #333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--cinza-claro);
+            color: var(--cinza-escuro);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        h1 {
+            color: var(--azul-medio);
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .postit-principal {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .postit-principal.azul {
+            background-color: var(--azul-medio);
+            color: white;
+        }
+        
+        .postit-principal.vermelho {
+            background-color: var(--vermelho-medio);
+            color: white;
+        }
+        
+        .postit-principal.verde {
+            background-color: var(--verde-medio);
+            color: white;
+        }
+        
+        .postit-titulo {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .postit-conteudo {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+        
+        .comentarios-container {
+            margin-top: 40px;
+        }
+        
+        .comentarios-titulo {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--cinza-escuro);
+        }
+        
+        .novo-comentario {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-adicionar {
+            background-color: var(--verde-medio);
+            color: white;
+        }
+        
+        .comentarios-lista {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .comentario {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .comentario.azul {
+            background-color: var(--azul-claro);
+        }
+        
+        .comentario.vermelho {
+            background-color: var(--vermelho-claro);
+        }
+        
+        .comentario.verde {
+            background-color: var(--verde-claro);
+        }
+        
+        .comentario-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .comentario-cor {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .comentario-cor.azul {
+            background-color: var(--azul-medio);
+        }
+        
+        .comentario-cor.vermelho {
+            background-color: var(--vermelho-medio);
+        }
+        
+        .comentario-cor.verde {
+            background-color: var(--verde-medio);
+        }
+        
+        .btn-solicitar-exclusao {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .btn-solicitar-exclusao:hover {
+            color: #e74c3c;
+        }
+
+        .btn-excluir-direto {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #e74c3c;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-confirmar {
+            background-color: var(--vermelho-medio);
+            color: white;
+        }
+        
+        .btn-cancelar {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .admin-panel {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 40px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .admin-panel h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--vermelho-medio);
+        }
+        
+        .solicitacoes-exclusao {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .solicitacao {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .solicitacao-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .solicitacao-acoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-aprovar {
+            background-color: var(--verde-medio);
+            color: white;
+        }
+        
+        .btn-rejeitar {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .timer {
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .acesso-admin {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .btn-admin {
+            background-color: var(--azul-medio);
+            color: white;
+        }
+
+        .comentario-admin {
+            border: 2px solid var(--vermelho-medio);
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Post-its Pirkito</h1>
+            <div class="subtitle">Visualização Pública - make by rede cidadã</div>
+        </header>
+        
+        <div id="postitPrincipal" class="postit-principal azul">
+            <h2 class="postit-titulo" id="postitTitulo">Bem-vindo ao Post-its Pirkito</h2>
+            <div class="postit-conteudo" id="postitConteudo">
+                Este é um exemplo de post-it. Quando você compartilhar um post-it do sistema principal, ele aparecerá aqui.
+            </div>
+        </div>
+        
+        <div class="comentarios-container">
+            <h2 class="comentarios-titulo">Comentários</h2>
+            
+            <div class="novo-comentario">
+                <form id="formComentario">
+                    <div class="form-group">
+                        <label for="comentarioAutor">Seu nome:</label>
+                        <input type="text" id="comentarioAutor" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="comentarioTexto">Comentário:</label>
+                        <textarea id="comentarioTexto" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Cor do comentário:</label>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <div class="comentario-cor azul" data-cor="azul"></div>
+                            <div class="comentario-cor vermelho" data-cor="vermelho"></div>
+                            <div class="comentario-cor verde" data-cor="verde"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-adicionar">Adicionar Comentário</button>
+                </form>
+            </div>
+            
+            <div class="comentarios-lista" id="comentariosLista">
+                <!-- Comentários serão adicionados dinamicamente aqui -->
+            </div>
+        </div>
+        
+        <div class="admin-panel" id="adminPanel" style="display: none;">
+            <h2>Painel de Administração</h2>
+            
+            <div class="solicitacoes-exclusao" id="solicitacoesExclusao">
+                <!-- Solicitações de exclusão serão adicionadas dinamicamente aqui -->
+            </div>
+
+            <div class="comentarios-admin" id="comentariosAdmin" style="margin-top: 30px;">
+                <h3>Comentários - Exclusão Direta</h3>
+                <div id="listaComentariosAdmin">
+                    <!-- Lista de comentários para exclusão direta -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="acesso-admin">
+            <button class="btn btn-admin" id="btnAcessoAdmin">Acesso Administrativo</button>
+        </div>
+        
+        <div class="timer" id="timer">
+            Tempo restante para edição: <span id="tempoRestante">10:00</span>
+        </div>
+    </div>
+    
+    <!-- Modal para justificar exclusão de comentário -->
+    <div class="modal" id="modalJustificarExclusao">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Solicitar Exclusão</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>Por favor, justifique por que este comentário deve ser removido:</p>
+            <div class="form-group">
+                <textarea id="justificativaExclusao" placeholder="Digite sua justificativa..." required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancelar" id="btnCancelarExclusao">Cancelar</button>
+                <button class="btn btn-confirmar" id="btnConfirmarExclusao">Solicitar Exclusão</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para acesso administrativo -->
+    <div class="modal" id="modalAcessoAdmin">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Acesso Administrativo</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>Digite a senha de administração para acessar o painel:</p>
+            <div class="form-group">
+                <input type="password" id="senhaAdmin" placeholder="Senha de administração" required>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancelar" id="btnCancelarAdmin">Cancelar</button>
+                <button class="btn btn-confirmar" id="btnConfirmarAdmin">Acessar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Dados iniciais
+        let postitAtual = null;
+        let comentarios = JSON.parse(localStorage.getItem('comentarios')) || {};
+        let solicitacoesExclusao = JSON.parse(localStorage.getItem('solicitacoesExclusao')) || [];
+        let tempoRestante = 600; // 10 minutos em segundos
+        let timerInterval = null;
+        let modoAdmin = false;
+        let comentarioParaExcluir = null;
+        
+        // Elementos DOM
+        const postitPrincipal = document.getElementById('postitPrincipal');
+        const postitTitulo = document.getElementById('postitTitulo');
+        const postitConteudo = document.getElementById('postitConteudo');
+        const formComentario = document.getElementById('formComentario');
+        const comentariosLista = document.getElementById('comentariosLista');
+        const adminPanel = document.getElementById('adminPanel');
+        const solicitacoesExclusaoContainer = document.getElementById('solicitacoesExclusao');
+        const listaComentariosAdmin = document.getElementById('listaComentariosAdmin');
+        const timerElement = document.getElementById('timer');
+        const tempoRestanteElement = document.getElementById('tempoRestante');
+        const btnAcessoAdmin = document.getElementById('btnAcessoAdmin');
+        const modalJustificarExclusao = document.getElementById('modalJustificarExclusao');
+        const modalAcessoAdmin = document.getElementById('modalAcessoAdmin');
+        const justificativaExclusao = document.getElementById('justificativaExclusao');
+        const btnCancelarExclusao = document.getElementById('btnCancelarExclusao');
+        const btnConfirmarExclusao = document.getElementById('btnConfirmarExclusao');
+        const senhaAdmin = document.getElementById('senhaAdmin');
+        const btnCancelarAdmin = document.getElementById('btnCancelarAdmin');
+        const btnConfirmarAdmin = document.getElementById('btnConfirmarAdmin');
+        
+        // Inicialização
+        function inicializar() {
+            carregarPostitDaURL();
+            renderizarComentarios();
+            configurarEventos();
+            iniciarTimer();
+        }
+        
+        // Carregar post-it da URL
+        function carregarPostitDaURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postitId = urlParams.get('id');
+            
+            if (postitId) {
+                // Buscar o post-it do localStorage
+                const postits = JSON.parse(localStorage.getItem('postits')) || [];
+                postitAtual = postits.find(p => p.id == postitId);
+                
+                if (postitAtual) {
+                    postitTitulo.textContent = postitAtual.titulo;
+                    postitConteudo.textContent = postitAtual.conteudo;
+                    postitPrincipal.className = `postit-principal ${postitAtual.cor}`;
+                    
+                    // Inicializar comentários para este post-it se não existirem
+                    if (!comentarios[postitId]) {
+                        comentarios[postitId] = [];
+                        salvarComentarios();
+                    }
+                }
+            }
+        }
+        
+        // Renderizar comentários
+        function renderizarComentarios() {
+            comentariosLista.innerHTML = '';
+            
+            if (!postitAtual) return;
+            
+            const comentariosDoPostit = comentarios[postitAtual.id] || [];
+            
+            if (comentariosDoPostit.length === 0) {
+                comentariosLista.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; padding: 20px;">Nenhum comentário ainda. Seja o primeiro a comentar!</p>';
+                return;
+            }
+            
+            comentariosDoPostit.forEach((comentario, index) => {
+                const comentarioElement = document.createElement('div');
+                comentarioElement.className = `comentario ${comentario.cor}`;
+                
+                // Se estiver no modo admin, mostra botão de exclusão direta
+                if (modoAdmin) {
+                    comentarioElement.classList.add('comentario-admin');
+                    comentarioElement.innerHTML = `
+                        <div class="comentario-header">
+                            <strong>${comentario.autor}</strong>
+                            <div>
+                                <button class="btn-excluir-direto" data-index="${index}">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="comentario-texto">${comentario.texto}</div>
+                        <small>${formatarData(comentario.data)}</small>
+                    `;
+                } else {
+                    comentarioElement.innerHTML = `
+                        <div class="comentario-header">
+                            <strong>${comentario.autor}</strong>
+                            <button class="btn-solicitar-exclusao" data-index="${index}">🗑️</button>
+                        </div>
+                        <div class="comentario-texto">${comentario.texto}</div>
+                        <small>${formatarData(comentario.data)}</small>
+                    `;
+                }
+                
+                comentariosLista.appendChild(comentarioElement);
+            });
+            
+            // Configurar eventos dos botões
+            if (modoAdmin) {
+                document.querySelectorAll('.btn-excluir-direto').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        excluirComentarioDireto(index);
+                    });
+                });
+            } else {
+                document.querySelectorAll('.btn-solicitar-exclusao').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        solicitarExclusaoComentario(index);
+                    });
+                });
+            }
+        }
+        
+        // Renderizar painel administrativo
+        function renderizarPainelAdmin() {
+            // Renderizar solicitações de exclusão
+            renderizarSolicitacoesExclusao();
+            
+            // Renderizar lista de comentários para exclusão direta
+            renderizarComentariosAdmin();
+        }
+        
+        // Renderizar solicitações de exclusão
+        function renderizarSolicitacoesExclusao() {
+            solicitacoesExclusaoContainer.innerHTML = '';
+            
+            if (solicitacoesExclusao.length === 0) {
+                solicitacoesExclusaoContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Nenhuma solicitação de exclusão pendente.</p>';
+                return;
+            }
+            
+            // Filtrar solicitações apenas para o post-it atual
+            const solicitacoesDoPostit = solicitacoesExclusao.filter(s => s.postitId == postitAtual.id);
+            
+            if (solicitacoesDoPostit.length === 0) {
+                solicitacoesExclusaoContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Nenhuma solicitação de exclusão para este post-it.</p>';
+                return;
+            }
+            
+            solicitacoesDoPostit.forEach((solicitacao, index) => {
+                const solicitacaoElement = document.createElement('div');
+                solicitacaoElement.className = 'solicitacao';
+                
+                solicitacaoElement.innerHTML = `
+                    <div class="solicitacao-header">
+                        <strong>Comentário de: ${solicitacao.autorComentario}</strong>
+                        <small>${formatarData(solicitacao.data)}</small>
+                    </div>
+                    <p><strong>Comentário:</strong> ${solicitacao.textoComentario}</p>
+                    <p><strong>Justificativa:</strong> ${solicitacao.justificativa}</p>
+                    <div class="solicitacao-acoes">
+                        <button class="btn btn-aprovar" data-index="${index}">Aprovar Exclusão</button>
+                        <button class="btn btn-rejeitar" data-index="${index}">Rejeitar</button>
+                    </div>
+                `;
+                
+                solicitacoesExclusaoContainer.appendChild(solicitacaoElement);
+            });
+            
+            // Configurar eventos dos botões
+            document.querySelectorAll('.btn-aprovar').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const indexGlobal = solicitacoesExclusao.findIndex(s => s.postitId == postitAtual.id);
+                    const indexLocal = parseInt(e.target.dataset.index);
+                    aprovarExclusao(indexGlobal !== -1 ? indexGlobal : indexLocal);
+                });
+            });
+            
+            document.querySelectorAll('.btn-rejeitar').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const indexGlobal = solicitacoesExclusao.findIndex(s => s.postitId == postitAtual.id);
+                    const indexLocal = parseInt(e.target.dataset.index);
+                    rejeitarExclusao(indexGlobal !== -1 ? indexGlobal : indexLocal);
+                });
+            });
+        }
+        
+        // Renderizar comentários para exclusão direta no painel admin
+        function renderizarComentariosAdmin() {
+            listaComentariosAdmin.innerHTML = '';
+            
+            if (!postitAtual) return;
+            
+            const comentariosDoPostit = comentarios[postitAtual.id] || [];
+            
+            if (comentariosDoPostit.length === 0) {
+                listaComentariosAdmin.innerHTML = '<p style="text-align: center; padding: 20px;">Nenhum comentário para exibir.</p>';
+                return;
+            }
+            
+            comentariosDoPostit.forEach((comentario, index) => {
+                const comentarioElement = document.createElement('div');
+                comentarioElement.className = `comentario ${comentario.cor} comentario-admin`;
+                
+                comentarioElement.innerHTML = `
+                    <div class="comentario-header">
+                        <strong>${comentario.autor}</strong>
+                        <button class="btn-excluir-direto" data-index="${index}">🗑️</button>
+                    </div>
+                    <div class="comentario-texto">${comentario.texto}</div>
+                    <small>${formatarData(comentario.data)}</small>
+                `;
+                
+                listaComentariosAdmin.appendChild(comentarioElement);
+            });
+            
+            // Configurar eventos dos botões de exclusão direta
+            document.querySelectorAll('.btn-excluir-direto').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    excluirComentarioDireto(index);
+                });
+            });
+        }
+        
+        // Configurar eventos
+        function configurarEventos() {
+            // Formulário de comentário
+            formComentario.addEventListener('submit', adicionarComentario);
+            
+            // Seleção de cor para comentário
+            document.querySelectorAll('.comentario-cor').forEach(cor => {
+                cor.addEventListener('click', (e) => {
+                    document.querySelectorAll('.comentario-cor').forEach(c => {
+                        c.style.border = '2px solid transparent';
+                    });
+                    e.target.style.border = '2px solid black';
+                    formComentario.dataset.corSelecionada = e.target.dataset.cor;
+                });
+            });
+            
+            // Definir cor padrão
+            document.querySelector('.comentario-cor.azul').style.border = '2px solid black';
+            formComentario.dataset.corSelecionada = 'azul';
+            
+            // Botão de acesso administrativo
+            btnAcessoAdmin.addEventListener('click', abrirModalAcessoAdmin);
+            
+            // Eventos dos modais
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', fecharModais);
+            });
+            
+            btnCancelarExclusao.addEventListener('click', fecharModais);
+            btnConfirmarExclusao.addEventListener('click', confirmarSolicitacaoExclusao);
+            
+            btnCancelarAdmin.addEventListener('click', fecharModais);
+            btnConfirmarAdmin.addEventListener('click', verificarSenhaAdmin);
+            
+            // Fechar modal ao clicar fora
+            window.addEventListener('click', (e) => {
+                if (e.target === modalJustificarExclusao || e.target === modalAcessoAdmin) {
+                    fecharModais();
+                }
+            });
+        }
+        
+        // Adicionar comentário
+        function adicionarComentario(e) {
+            e.preventDefault();
+            
+            if (!postitAtual) {
+                alert('Não é possível adicionar comentários sem um post-it selecionado.');
+                return;
+            }
+            
+            const autor = document.getElementById('comentarioAutor').value.trim();
+            const texto = document.getElementById('comentarioTexto').value.trim();
+            const cor = formComentario.dataset.corSelecionada || 'azul';
+            
+            if (!autor || !texto) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+            
+            const novoComentario = {
+                autor,
+                texto,
+                cor,
+                data: new Date().toISOString()
+            };
+            
+            if (!comentarios[postitAtual.id]) {
+                comentarios[postitAtual.id] = [];
+            }
+            
+            comentarios[postitAtual.id].push(novoComentario);
+            salvarComentarios();
+            renderizarComentarios();
+            
+            // Se estiver no modo admin, atualizar também o painel
+            if (modoAdmin) {
+                renderizarPainelAdmin();
+            }
+            
+            // Limpar formulário
+            document.getElementById('comentarioAutor').value = '';
+            document.getElementById('comentarioTexto').value = '';
+        }
+        
+        // Solicitar exclusão de comentário
+        function solicitarExclusaoComentario(index) {
+            comentarioParaExcluir = index;
+            justificativaExclusao.value = '';
+            modalJustificarExclusao.style.display = 'flex';
+        }
+        
+        // Confirmar solicitação de exclusão
+        function confirmarSolicitacaoExclusao() {
+            const justificativa = justificativaExclusao.value.trim();
+            
+            if (!justificativa) {
+                alert('Por favor, forneça uma justificativa para a exclusão.');
+                return;
+            }
+            
+            const comentario = comentarios[postitAtual.id][comentarioParaExcluir];
+            
+            const solicitacao = {
+                postitId: postitAtual.id,
+                comentarioIndex: comentarioParaExcluir,
+                autorComentario: comentario.autor,
+                textoComentario: comentario.texto,
+                justificativa: justificativa,
+                data: new Date().toISOString()
+            };
+            
+            solicitacoesExclusao.push(solicitacao);
+            salvarSolicitacoesExclusao();
+            
+            alert('Solicitação de exclusão enviada. Aguarde aprovação administrativa.');
+            fecharModais();
+        }
+        
+        // Excluir comentário diretamente (modo admin)
+        function excluirComentarioDireto(index) {
+            if (confirm('Tem certeza que deseja excluir este comentário?')) {
+                comentarios[postitAtual.id].splice(index, 1);
+                salvarComentarios();
+                
+                // Atualizar ambas as visualizações
+                renderizarComentarios();
+                if (modoAdmin) {
+                    renderizarPainelAdmin();
+                }
+                
+                alert('Comentário excluído com sucesso!');
+            }
+        }
+        
+        // Aprovar exclusão de comentário
+        function aprovarExclusao(index) {
+            const solicitacao = solicitacoesExclusao[index];
+            
+            // Remover comentário
+            comentarios[solicitacao.postitId].splice(solicitacao.comentarioIndex, 1);
+            salvarComentarios();
+            
+            // Remover solicitação
+            solicitacoesExclusao.splice(index, 1);
+            salvarSolicitacoesExclusao();
+            
+            // Atualizar interfaces
+            renderizarComentarios();
+            renderizarPainelAdmin();
+            
+            alert('Comentário excluído com sucesso.');
+        }
+        
+        // Rejeitar solicitação de exclusão
+        function rejeitarExclusao(index) {
+            solicitacoesExclusao.splice(index, 1);
+            salvarSolicitacoesExclusao();
+            renderizarPainelAdmin();
+            
+            alert('Solicitação de exclusão rejeitada.');
+        }
+        
+        // Abrir modal de acesso administrativo
+        function abrirModalAcessoAdmin() {
+            senhaAdmin.value = '';
+            modalAcessoAdmin.style.display = 'flex';
+        }
+        
+        // Verificar senha de administração
+        function verificarSenhaAdmin() {
+            const senha = senhaAdmin.value;
+            
+            if (senha === "PIRKITO_FUNCION_ADM") {
+                modoAdmin = true;
+                adminPanel.style.display = 'block';
+                timerElement.style.display = 'none'; // Esconder timer no modo admin
+                clearInterval(timerInterval); // Parar o timer
+                renderizarComentarios(); // Re-renderizar com botões de admin
+                renderizarPainelAdmin(); // Renderizar painel administrativo
+                fecharModais();
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+        
+        // Iniciar timer de edição
+        function iniciarTimer() {
+            // Verificar se está no modo de visualização (não admin)
+            const urlParams = new URLSearchParams(window.location.search);
+            const modoAdminURL = urlParams.get('admin');
+            
+            if (modoAdminURL === "true") {
+                modoAdmin = true;
+                adminPanel.style.display = 'block';
+                timerElement.style.display = 'none';
+                renderizarComentarios();
+                renderizarPainelAdmin();
+                return;
+            }
+            
+            // Atualizar timer a cada segundo
+            timerInterval = setInterval(() => {
+                tempoRestante--;
+                
+                const minutos = Math.floor(tempoRestante / 60);
+                const segundos = tempoRestante % 60;
+                
+                tempoRestanteElement.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+                
+                if (tempoRestante <= 0) {
+                    clearInterval(timerInterval);
+                    // Desabilitar edição
+                    formComentario.querySelectorAll('input, textarea, button').forEach(element => {
+                        element.disabled = true;
+                    });
+                    document.querySelectorAll('.btn-solicitar-exclusao').forEach(btn => {
+                        btn.disabled = true;
+                    });
+                    timerElement.innerHTML = 'Tempo de edição esgotado.';
+                }
+            }, 1000);
+        }
+        
+        // Fechar todos os modais
+        function fecharModais() {
+            modalJustificarExclusao.style.display = 'none';
+            modalAcessoAdmin.style.display = 'none';
+        }
+        
+        // Salvar comentários no localStorage
+        function salvarComentarios() {
+            localStorage.setItem('comentarios', JSON.stringify(comentarios));
+        }
+        
+        // Salvar solicitações de exclusão no localStorage
+        function salvarSolicitacoesExclusao() {
+            localStorage.setItem('solicitacoesExclusao', JSON.stringify(solicitacoesExclusao));
+        }
+        
+        // Formatar data
+        function formatarData(dataString) {
+            const data = new Date(dataString);
+            return data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Inicializar a aplicação
+        inicializar();
+    </script>
+</body>
+</html>
